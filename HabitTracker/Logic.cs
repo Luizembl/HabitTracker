@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Reflection.PortableExecutable;
+using System;
+using System.Text;
 using Microsoft.Data.Sqlite;
 
 namespace HabitTracker
@@ -30,6 +32,8 @@ namespace HabitTracker
         {
             Console.Clear();
 
+            Console.WriteLine("test");
+
             using (var connection = new SqliteConnection(connectionDataBase))
             {
                 connection.Open();
@@ -39,6 +43,12 @@ namespace HabitTracker
                     $"SELECT * FROM books_read ";
 
                 SqliteDataReader reader = tableCmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Console.WriteLine($"Id: {reader["Id"]}, Quantity: {reader["Quantity"]}, Date: {reader["Date"]}");
+                }
+                connection.Close();
             }
         }
 
@@ -57,8 +67,8 @@ namespace HabitTracker
                 string date = Console.ReadLine();
 
                 SqliteCommand insertHabit = new SqliteCommand("INSERT INTO books_read (Quantity, Date) VALUES (@booksQty, @date)", connection);
-                insertHabit.Parameters.AddWithValue("@Quantity", booksQty);
-                insertHabit.Parameters.AddWithValue("@Date", date);
+                insertHabit.Parameters.AddWithValue("@booksQty", booksQty);
+                insertHabit.Parameters.AddWithValue("@date", date);
 
                 insertHabit.ExecuteNonQuery();
                 connection.Close();
