@@ -8,11 +8,12 @@ namespace HabitTracker
 		internal void ShowMenu()
 		{
             bool isAppOn = true;
+            Console.Clear();
 
             do
             {
-                Console.Clear();
                 StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
                 sb.AppendLine("MAIN MENU");
                 sb.AppendLine();
                 sb.AppendLine("Please choose one option from the menu Below:");
@@ -41,10 +42,10 @@ namespace HabitTracker
                         Logic.InsertRecord();
                         break;
                     case "3":
-                        Console.WriteLine("a");
+                        Logic.DeleteRecord();
                         break;
                     case "4":
-                        Console.WriteLine("b");
+                        Logic.UpdateRecord();
                         break;
                     default:
                         Console.WriteLine("Invalid input, please type a number from 0 to 4.");
