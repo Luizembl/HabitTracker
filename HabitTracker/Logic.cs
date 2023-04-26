@@ -2,6 +2,7 @@
 using System;
 using System.Text;
 using Microsoft.Data.Sqlite;
+using System.Linq;
 
 namespace HabitTracker
 {
@@ -84,6 +85,8 @@ namespace HabitTracker
         {
             Console.Clear();
 
+            Logic.GetAllRecords();
+
             using (var connection = new SqliteConnection(connectionDataBase))
             {
                 connection.Open();
@@ -99,24 +102,29 @@ namespace HabitTracker
                     Console.WriteLine($"Id: {habit.Id}, Month: {habit.Month}, Year: {habit.Year}, Quantity: {habit.Quantity}");
                 }
 
-                Console.WriteLine("Enter the ID of the record to delete:");
-                int inputId = int.Parse(Console.ReadLine());
-                bool isValid = false;
+                reader.Close();
 
-                foreach (Habit hab in habits)
+                bool isValid = false;
+                int inputId = 0;
+
+                while (isValid == false)
                 {
-                    if (hab.Id == inputId)
+                    Console.WriteLine("Enter the ID of the record to delete:");
+                    int userId = int.Parse(Console.ReadLine());
+
+                    tableCmd.CommandText = $"SELECT COUNT(*) FROM books_read WHERE Id = {userId}";
+                    int count = Convert.ToInt32(tableCmd.ExecuteScalar());
+
+                    if (count > 0)
                     {
+                        inputId = userId;
                         isValid = true;
-                        break;
                     }
                     else
                     {
-                        Console.WriteLine("Please choose from a valid id");
-                        inputId = int.Parse(Console.ReadLine());
+                        Console.WriteLine("Please choose a valid id");
                     }
                 }
-                
 
                 SqliteCommand deleteCmd = new SqliteCommand("DELETE FROM books_read WHERE Id = @inputId", connection);
                 deleteCmd.Parameters.AddWithValue("@inputId", inputId);
@@ -131,54 +139,69 @@ namespace HabitTracker
         internal static void UpdateRecord()
         {
             Console.Clear();
+
             Logic.GetAllRecords();
 
-            Console.WriteLine("Enter the ID of the record to update: ");
-            int id = int.Parse(Console.ReadLine());
-
-            Console.WriteLine("If you want to update the quantity choose: 1, if you want to update the date choose: 2");
-            int newData = int.Parse(Console.ReadLine());
-
-            if (newData == 1)
+            using (var connection = new SqliteConnection(connectionDataBase))
             {
-                Console.WriteLine("Please choose your new quantity");
-                int newQty = int.Parse(Console.ReadLine());
+                connection.Open();
+                var tableCmd = connection.CreateCommand();
 
-                using (var connection = new SqliteConnection(connectionDataBase))
+                SqliteDataReader reader = tableCmd.ExecuteReader();
+
+                List<Habit> habits = new List<Habit>();
+                while (reader.Read())
                 {
-                    connection.Open();
-                    var updateCmd = connection.CreateCommand();
-                    updateCmd.CommandText = $"UPDATE books_read SET Quantity = @newQty WHERE Id = @id";
-                    updateCmd.Parameters.AddWithValue("@newQty", newQty);
-                    updateCmd.Parameters.AddWithValue("@id", id);
-                    int rowsAffected = updateCmd.ExecuteNonQuery();
-                    Console.WriteLine($"Rows affected: {rowsAffected}");
-                    connection.Close();
+                    var habit = new Habit(Convert.ToInt32(reader["Id"]), Convert.ToInt32(reader["Month"]), Convert.ToInt32(reader["Year"]), Convert.ToInt32(reader["Quantity"]));
+                    habits.Add(habit);
+                    Console.WriteLine($"Id: {habit.Id}, Month: {habit.Month}, Year: {habit.Year}, Quantity: {habit.Quantity}");
                 }
-            }
-            else if (newData == 2)
-            {
-                Console.WriteLine("Please choose your new date yyyy-mm");
-                string newDate = Console.ReadLine();
 
-                using (var connection = new SqliteConnection(connectionDataBase))
+                reader.Close();
+
+                bool isValid = false;
+                int inputId = 0;
+
+                while (isValid == false)
                 {
-                    connection.Open();
-                    var updateCmd = connection.CreateCommand();
-                    updateCmd.CommandText = $"UPDATE books_read SET Date = @newDate WHERE Id = @id";
-                    updateCmd.Parameters.AddWithValue("@newDate", newDate);
-                    updateCmd.Parameters.AddWithValue("@id", id);
-                    int rowsAffected = updateCmd.ExecuteNonQuery();
-                    Console.WriteLine($"Rows affected: {rowsAffected}");
-                    connection.Close();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Please choose options between 1 and 2");
-                Environment.Exit(0);
-            }
+                    Console.WriteLine("Enter the ID of the record to update:");
+                    int userId = int.Parse(Console.ReadLine());
 
+                    tableCmd.CommandText = $"SELECT COUNT(*) FROM books_read WHERE Id = {userId}";
+                    int count = Convert.ToInt32(tableCmd.ExecuteScalar());
+
+                    if (count > 0)
+                    {
+                        inputId = userId;
+                        isValid = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Please choose a valid id");
+                    }
+                }
+
+                Console.WriteLine("Enter the new month:");
+                int month = int.Parse(Console.ReadLine());
+
+                Console.WriteLine("Enter the new year:");
+                int year = int.Parse(Console.ReadLine());
+
+                Console.WriteLine("Enter the new quantity:");
+                int quantity = int.Parse(Console.ReadLine());
+
+                SqliteCommand updateCmd = new SqliteCommand("UPDATE books_read SET Month = @month, Year = @year, Quantity = @quantity WHERE Id = @inputId", connection);
+                updateCmd.Parameters.AddWithValue("@month", month);
+                updateCmd.Parameters.AddWithValue("@year", year);
+                updateCmd.Parameters.AddWithValue("@quantity", quantity);
+                updateCmd.Parameters.AddWithValue("@inputId", inputId);
+
+                int rowsAffected = updateCmd.ExecuteNonQuery();
+
+                Console.WriteLine($"Record with ID {inputId} has been updated.");
+
+                connection.Close();
+            }
         }
     }
 }
