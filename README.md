@@ -10,11 +10,7 @@ Habit Tracker is a console-based application that allows you to keep track of th
 ## Usage
 
 - Clone the repository or download the code as a ZIP file.
-- Navigate to the project directory and run the following command in the terminal:
-
-------------
-dotnet run
-------------
+- Navigate to the project directory and run the following command in the terminal: dotnet run
 
 ## Functionality
 
