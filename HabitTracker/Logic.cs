@@ -107,7 +107,7 @@ namespace HabitTracker
                 bool isValid = false;
                 int inputId = 0;
 
-                while (isValid == false)
+                while (!isValid)
                 {
                     Console.WriteLine("Enter the ID of the record to delete:");
                     int userId = int.Parse(Console.ReadLine());
